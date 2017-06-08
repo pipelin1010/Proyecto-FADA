@@ -33,23 +33,31 @@ struct proceso{
 int numeroDeProcesos; // Valor que representa la cantidad de procesos
 vector <proceso> procesos;// Vector que contiene todos los procesos a manejar
 
+// Método que determina si un intervalo se intersecta con los intervalos que ya seleccionamos
+// Tenemos como entrada el vector solucion construido hasta cierta parte y un indice que representa el proceso
+// a analizar.
 bool intersectan(vector<bool> &vectorSolucion,int indice){
+    // Recorremos todo el vector solucion y si un proceso ya fue seleccionado entonces comprobamos que
+    // el proceso indice no se intersecte con ese proceso
     for (int i = 0; i < vectorSolucion.size(); i++){
-        if (vectorSolucion[i] == 0) continue;
-        if (procesos[indice].horaInicio >= procesos[i].horaInicio && procesos[indice].horaInicio < procesos[i].horaFinal) return true;
-        if (procesos[indice].horaFinal > procesos[i].horaInicio && procesos[indice].horaFinal <= procesos[i].horaFinal ) return true;
-        if (procesos[indice].horaInicio == procesos[i].horaInicio && procesos[indice].horaFinal == procesos[i].horaFinal) return true;
-    }
-    return false;
-}
+        if (vectorSolucion[i] == 0) continue;// Si es cero es que no se ha seleccionado
+        if (procesos[indice].horaInicio >= procesos[i].horaInicio && procesos[indice].horaInicio < procesos[i].horaFinal) return true; // Caso 1
+        if (procesos[indice].horaFinal > procesos[i].horaInicio && procesos[indice].horaFinal <= procesos[i].horaFinal ) return true; // Caso 2
+        if (procesos[indice].horaInicio == procesos[i].horaInicio && procesos[indice].horaFinal == procesos[i].horaFinal) return true; // Caso 3
+    }// fin for
+    return false; // Si no se intersecto con ningún proceso retorna false
+}// fin metodo intersectan
 
+//Método que determina el tiempo que se ocupa la sala para un vectorSolucion
 int contarSolucion(vector<bool> &vectorRespuesta){
-    int aux = 0;
+    int aux = 0;// Variable auxiliar de respuesta
     for (int i = 0; i < numeroDeProcesos; i++){
-        aux += vectorRespuesta[i] == 1 ? procesos[i].horaFinal - procesos[i].horaInicio : 0; 
-    }
-    return aux;
-}
+        // Si el vectorRespuesta en la posición i es igual a 1 entonces sumamos el tiempo que ocupa
+        // la sala ese vector
+        aux += vectorRespuesta[i] == 1 ? procesos[i].horaFinal - procesos[i].horaInicio : 0;
+    }//fin for
+    return aux;// Retornamos la respuesta
+}// fin metodo contarSolucion
 
 vector<bool> encontrarSolucion(vector<bool> vectorSolucion, int indice){
     if (indice >= numeroDeProcesos) return vectorSolucion;
@@ -65,6 +73,7 @@ vector<bool> encontrarSolucion(vector<bool> vectorSolucion, int indice){
     return contarSolucion(p1) >= contarSolucion(p2) ? p1 : p2;
 }
 
+// Metodo
 vector<bool> solucion(){
     vector<bool> p1, p2, aux1;
     aux1.assign(numeroDeProcesos,0);
@@ -72,7 +81,7 @@ vector<bool> solucion(){
     aux1[0] = 1;
     p2 = encontrarSolucion(aux1, 1);
     return contarSolucion(p1) >= contarSolucion(p2) ? p1 : p2;
-}
+}//fin contar solucion
 
 int main(int argc, char** argv) {
     freopen("inp","r",stdin);
