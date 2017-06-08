@@ -59,28 +59,41 @@ int contarSolucion(vector<bool> &vectorRespuesta){
     return aux;// Retornamos la respuesta
 }// fin metodo contarSolucion
 
+// Metodo que permite encontrar la solucion al problema
+// Recibimos un vector solucion hasta cierto momento y un indice que representa el proceso a seleccionar
 vector<bool> encontrarSolucion(vector<bool> vectorSolucion, int indice){
-    if (indice >= numeroDeProcesos) return vectorSolucion;
-    vector<bool> p1(numeroDeProcesos), p2(numeroDeProcesos);
-    p1 = encontrarSolucion(vectorSolucion, indice + 1);
-    if(!intersectan(vectorSolucion,indice)){
+    if (indice >= numeroDeProcesos) return vectorSolucion;// Si el indice es mayor al numero de procesos que hay
+                                                          // significa que no hay mas procesos por seleccionar por lo tanto
+                                                          // retornamos el vectorSolucion.
+    vector<bool> p1(numeroDeProcesos), p2(numeroDeProcesos);// Creamos dos vectores p1 y p2, los cuales contienen la solucion
+                                                            // de no tomar o tomar el proceso respectivamente.
+    p1 = encontrarSolucion(vectorSolucion, indice + 1);// No tomamos el proceso indice y seguimos mirando con el proceso indice + 1
+    if(!intersectan(vectorSolucion,indice)){// Si no se intersecta el proceso indice con ningun proceso del vector solucion
+                                            // Entonces tomamos el proceso indice y buscamos una solucion con el siguiente proceso
+                                            // a analizar
         vectorSolucion[indice] = 1;
         p2 = encontrarSolucion(vectorSolucion,indice + 1);
-    }
+    }// fin if
     else {
-        p2 = vectorSolucion;
-    }
-    return contarSolucion(p1) >= contarSolucion(p2) ? p1 : p2;
-}
+        p2 = vectorSolucion; // Si no entonces sería lo mismo que buscar soluciones sin haber tomado el proceso indice
+                            // lo cual ya hace p1.
+    }//fin else
+    return contarSolucion(p1) >= contarSolucion(p2) ? p1 : p2;// Si el tiempo ocupado por p1 es mayor o igual a al tiempo
+                                                            //ocupado por p2 entonces retornamos p1 si no p2.
+}//fin metodo encontrarSolucion
 
-// Metodo
+// Metodo que encapsula el método encontrarSolucion
 vector<bool> solucion(){
+    //p1 representa el vector de no seleccionar el proceso 1 y
+    //p2 representa el vector de seleccionar el proceso 1.
+    //aux es un vector de apoyo.
     vector<bool> p1, p2, aux1;
     aux1.assign(numeroDeProcesos,0);
     p1 = encontrarSolucion(aux1, 1);
     aux1[0] = 1;
     p2 = encontrarSolucion(aux1, 1);
-    return contarSolucion(p1) >= contarSolucion(p2) ? p1 : p2;
+    return contarSolucion(p1) >= contarSolucion(p2) ? p1 : p2;// Si el tiempo ocupado por p1 es mayor o igual a el tiempo ocupado
+                                                        // por p2 entonces retornamos como solucion final a p1 si no p2.
 }//fin contar solucion
 
 int main(int argc, char** argv) {
