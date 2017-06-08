@@ -1,4 +1,52 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 
+/* 
+ * File:   main.cpp
+ * Author: invitado
+ *
+ * Created on 25 de mayo de 2017, 10:48 AM
+ */
+
+#include <cstdio>
+#include <string>
+#include <vector>
+#include <iostream>
+#include <algorithm>
+using namespace std;
+
+// Estructura que representa un proceso
+// Nombre, hora inicio y hora final
+struct proceso{
+    string nombreProceso; // El nombre del proceso
+    int horaInicio, horaFinal; // La hora de incio y final del proceso
+    // Constructor de la estructura
+    proceso(){
+        horaInicio =  horaFinal  = 0;
+        nombreProceso.clear();
+    }//Fin constructor
+};// Fin estructura
+
+int numeroDeProcesos; // Valor que representa la cantidad de procesos
+vector <proceso> procesos;// Vector que contiene todos los procesos a manejar
+
+// Método que determina si un intervalo se intersecta con los intervalos que ya seleccionamos
+// Tenemos como entrada el vector solucion construido hasta cierta parte y un indice que representa el proceso
+// a analizar.
+bool intersectan(vector<bool> &vectorSolucion,int indice){
+    // Recorremos todo el vector solucion y si un proceso ya fue seleccionado entonces comprobamos que
+    // el proceso indice no se intersecte con ese proceso
+    for (int i = 0; i < vectorSolucion.size(); i++){
+        if (vectorSolucion[i] == 0) continue;// Si es cero es que no se ha seleccionado
+        if (procesos[indice].horaInicio >= procesos[i].horaInicio && procesos[indice].horaInicio < procesos[i].horaFinal) return true; // Caso 1
+        if (procesos[indice].horaFinal > procesos[i].horaInicio && procesos[indice].horaFinal <= procesos[i].horaFinal ) return true; // Caso 2
+        if (procesos[indice].horaInicio == procesos[i].horaInicio && procesos[indice].horaFinal == procesos[i].horaFinal) return true; // Caso 3
+    }// fin for
+    return false; // Si no se intersecto con ningún proceso retorna false
+}// fin metodo intersectan
 
 //Método que determina el tiempo que se ocupa la sala para un vectorSolucion
 int contarSolucion(vector<bool> &vectorRespuesta){
@@ -6,7 +54,9 @@ int contarSolucion(vector<bool> &vectorRespuesta){
     for (int i = 0; i < numeroDeProcesos; i++){
         // Si el vectorRespuesta en la posición i es igual a 1 entonces sumamos el tiempo que ocupa
         // la sala ese vector
-        aux += vectorRespuesta[i] == 1 ? procesos[i].horaFinal - procesos[i].horaInicio : 0;
+        if(vectorRespuesta[i] == 1){
+        	aux = aux + (procesos[i].horaFinal - procesos[i].horaInicio);
+		}
     }//fin for
     return aux;// Retornamos la respuesta
 }// fin metodo contarSolucion
@@ -48,6 +98,31 @@ vector<bool> solucion(){
                                                         // por p2 entonces retornamos como solucion final a p1 si no p2.
 }//fin contar solucion
 
+int main(int argc, char** argv) {
+    freopen("inp.txt","r",stdin);
+    int maximoTiempoOcupado;
+    maximoTiempoOcupado = 0;// Variable que representa el tiempo máximo que se ha ocupado una sala
+    scanf("%d", &numeroDeProcesos);// Leemos la cantidad de procesos
+    procesos.resize(numeroDeProcesos);// Vector que contiene los procesos a analizar
+    
+    // for lectura de datos
+    for (int i = 0; i < numeroDeProcesos; i++){
+        cin >> procesos[i].nombreProceso >>  procesos[i].horaInicio >> procesos[i].horaFinal;
+    }//fin lectura de datos
+    //for (int i = 0; i < numeroDeProcesos; i++) printf("NOMBRE: %s HORA INICIO: %d HORA FINAL %d\n", procesos[i].nombreProceso.c_str(), procesos[i].horaInicio, procesos[i].horaFinal);
+    vector<bool> respuesta;
+    respuesta.assign(numeroDeProcesos,0);
+    respuesta = solucion();
+    int cantidadUnos = 0;
+    for (int i = 0; i < numeroDeProcesos; i++) cantidadUnos += (int)respuesta[i];
+    printf("%d\n", cantidadUnos);
+    int tiempoEfectivo = contarSolucion(respuesta);
+    printf("%d:%d\n", tiempoEfectivo / 100, tiempoEfectivo % 100);
+    for (int i = 0; i < numeroDeProcesos; i++){
+        if( respuesta[i] == 1) printf("%s\n", procesos[i].nombreProceso.c_str());
+    }
+    return 0;
+}// fin main
 int main(int argc, char** argv) {
     freopen("inp","r",stdin);
     int maximoTiempoOcupado;
