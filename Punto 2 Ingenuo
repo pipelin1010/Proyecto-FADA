@@ -1,0 +1,56 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/* 
+ * File:   main.cpp
+ * Author: invitado
+ *
+ * Created on 12 de junio de 2017, 05:56 PM
+ */
+
+#include <cstdio>
+#include <vector>
+#include <string>
+#include <iostream>
+#include <algorithm>
+using namespace std;
+#define INF 1000000000
+
+struct libro{
+    string nombre;
+    int numeroDePaginas;
+    libro(){
+        nombre.clear();
+        numeroDePaginas = 0;
+    }
+};
+
+vector <libro> libros;
+int escritores, numeroLibros;
+
+int solucion(vector<libro> &aux, int n){
+    if (n == 0)
+        return 0;
+    int q = INF;
+    for (int i = 1; i <= n; i++){
+        q = min(q, aux[i-1].numeroDePaginas + solucion(aux,n-i));
+    }
+    return q;
+}
+
+int main(int argc, char** argv) {
+    freopen("inp","r",stdin);
+    scanf("%d%d", &escritores, &numeroLibros);
+    libros.resize(numeroLibros);
+    for (int i = 0; i < numeroLibros; i++){
+        cin >> libros[i].nombre >> libros[i].numeroDePaginas;
+    }
+    
+    printf("SOLUCION: %d\n", solucion(libros,numeroLibros));
+    
+    return 0;
+}
+
