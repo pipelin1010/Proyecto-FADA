@@ -1,16 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/* 
- * File:   main.cpp
- * Author: invitado
- *
- * Created on 14 de junio de 2017, 11:07 AM
- */
-
 #include <cstdio>
 #include <vector>
 #include <string>
@@ -39,20 +26,23 @@ int sumatoria(int left, int right){
     }
     return aux;
 }
-
 int main(int argc, char** argv) {
     freopen("inp","r",stdin);
     escritores = numeroLibros = 0;
     libros.clear();
     scanf("%d%d", &escritores, &numeroLibros);
-    int dp[escritores][numeroLibros];
-    for (int i = 0; i < escritores; i++){
-        for (int j = 0; j < numeroLibros; j++){
+    
+    int dp[numeroLibros+1][escritores+1];
+    int intervalos[numeroLibros+1][numeroLibros+1];
+    
+    for (int i = 0; i <= numeroLibros; i++){
+        for (int j = 0; j <= escritores; j++){
             dp[i][j] = INF;
         }
     }
     
     libros.resize(numeroLibros);
+    
     for (int i = 0; i < numeroLibros; i++){
         cin >> libros[i].nombre >> libros[i].numeroDePaginas;
     }
@@ -60,31 +50,47 @@ int main(int argc, char** argv) {
         printf("LIBRO %s NUMERO PAGINAS %d\n", libros[i].nombre.c_str(), libros[i].numeroDePaginas);
     }
     
-    for (int i = 0; i < escritores; i++){
-        dp[i][0] = libros[0].numeroDePaginas;
+    for (int i = 1; i <= numeroLibros; i++){
+        intervalos[i][i] = libros[i-1].numeroDePaginas;
+        for (int j = i+1; j <= numeroLibros; j++){
+            intervalos[i][j] = libros[j-1].numeroDePaginas + intervalos[i][j-1];
+            intervalos[j][i] = intervalos[i][j];
+        }
     }
     
-    dp[0][0] = libros[0].numeroDePaginas;
-    for (int i = 1; i < numeroLibros; i++){
-        dp[0][i] = dp[0][i-1] + libros[i].numeroDePaginas;
-    }
-    
-    for (int i = 0; i < escritores; i++){
-        for (int j = 0; j < numeroLibros; j++){
-            printf("%d                    ", dp[i][j]);
+    for (int i = 1; i <= numeroLibros; i++){
+        for (int j = 1; j <= numeroLibros; j++){
+            printf("%d               ", intervalos[i][j]);
         }
         printf("\n");
     }
     
-    for (int i = 1; i < escritores; i++){
-        for (int j = 1; j < numeroLibros; j++){
-            for (int k = 0; k <= i; k++){
-                dp[i][j] = min(dp[i][j], max(dp[i-k][j-1], sumatoria(k, i)));
+    dp[1][1] = libros[0].numeroDePaginas;
+    for (int i = 2; i <= numeroLibros; i++){
+        dp[i][1] = libros[i-1].numeroDePaginas + dp[i-1][1];
+    }
+    
+    for (int i = 2; i <= escritores; i++){
+        dp[1][i] = libros[0].numeroDePaginas;
+    }
+    
+    for (int i = 1; i <= numeroLibros; i++){
+        for (int j = 1; j <= escritores; j++){
+            printf("%d               ", dp[i][j]);
+        }
+        printf("\n");
+    }
+    
+    for (int i = 2; i <= numeroLibros; i++){
+        for (int j = 2; j <= escritores; j++){
+            for (int k = 0; k < i; k++){
+                dp[i][j] = min(dp[i][j], max(dp[i-k][j-1], intervalos[i-k+1][i]));
+                printf("I: %d, J: %d, K: %d, dp[i-k][j-1]: %d, intervalos[k+1][i]: %d\n", i, j, k, dp[i-k][j-1], intervalos[i-k+1][i]);
             }
         }
     }
-    for (int i = 0; i < escritores; i++){
-        for (int j = 0; j < numeroLibros; j++){
+    for (int i = 1; i <= numeroLibros; i++){
+        for (int j = 1; j <= escritores; j++){
             printf("%d        ", dp[i][j]);
         }
         printf("\n");
