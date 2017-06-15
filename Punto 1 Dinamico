@@ -1,0 +1,81 @@
+#include <iostream>
+#include <cstdio>
+#include <algorithm>
+#include <string>
+#include <vector>
+using namespace std;
+
+
+// Estructura que representa un proceso
+// Nombre, hora inicio y hora final
+struct proceso{
+    string nombreProceso; // El nombre del proceso
+    int horaInicio, horaFinal; // La hora de incio y final del proceso
+    // Constructor de la estructura
+    proceso(){
+        horaInicio =  horaFinal  = 0;
+        nombreProceso.clear();
+    }//Fin constructor
+};// Fin estructura
+
+int numeroDeProcesos; // Valor que representa la cantidad de procesos
+vector <proceso> procesos;// Vector que contiene todos los procesos a manejar
+vector <proceso> procesosSeleccionados;// Vector que contiene todos los procesos a manejar
+int numeroProcesosSeleccionados = 0;
+
+bool cmp(proceso A, proceso B){
+	return A.horaInicio < B.horaInicio;
+}
+
+
+
+void determinarSolucion(int nodoActual, int * sucesores){
+	if(nodoActual == 0) return;
+	numeroProcesosSeleccionados++;
+	determinarSolucion(sucesores[nodoActual], sucesores);
+	procesosSeleccionados.push_back(procesos[nodoActual-1]);
+}
+
+int main(int argc, char** argv) {
+    freopen("inp.txt","r",stdin);
+    //freopen("out.txt","w",stdout);
+  	 int maximoTiempoOcupado;
+    maximoTiempoOcupado = 0;// Variable que representa el tiempo máximo que se ha ocupado una sala
+    scanf("%d", &numeroDeProcesos);// Leemos la cantidad de procesos
+    procesos.resize(numeroDeProcesos);// Vector que contiene los procesos a analizar
+    procesosSeleccionados.clear();
+    // for lectura de datos
+    for (int i = 0; i < numeroDeProcesos; i++){
+        cin >> procesos[i].nombreProceso >>  procesos[i].horaInicio >> procesos[i].horaFinal;
+    }//fin lectura de datos
+    
+    sort(procesos.begin(), procesos.end(), cmp);
+    int dp[numeroDeProcesos+1];
+    int sucesor[numeroDeProcesos+1];
+    dp[0] = 0;
+    sucesor[0] = 0;
+     for (int i = 1; i <= numeroDeProcesos; i++){
+    	int mejorProceso = 0;
+    	for (int j = i-1; j >= 1; j--){
+    		if (procesos[j-1].horaFinal <= procesos[i-1].horaInicio && dp[j] >= dp[mejorProceso]){
+					mejorProceso = j;
+			}
+		}
+		
+		int tomarProceso = (procesos[i-1].horaFinal - procesos[i-1].horaInicio) + dp[mejorProceso];
+		if (dp[i-1] > tomarProceso){
+			dp[i] = dp[i-1];
+			sucesor[i] = i-1;
+		}else{
+			dp[i] = tomarProceso;
+			sucesor[i] = mejorProceso;
+		}
+	}
+	determinarSolucion(numeroDeProcesos, sucesor);
+	printf("%d\n", numeroProcesosSeleccionados);
+    printf("%d\n", dp[numeroDeProcesos]);
+    for (int i = 0; i < procesosSeleccionados.size(); i++){
+    	printf("%s\n", procesosSeleccionados[i].nombreProceso.c_str());
+	}
+	return 0;
+}
