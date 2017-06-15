@@ -19,15 +19,8 @@ struct libro{
 vector <libro> libros;
 int escritores, numeroLibros;
 
-int sumatoria(int left, int right){
-    int aux = 0;
-    for (int i = left; i <= right; i++){
-        aux += libros[i].numeroDePaginas;
-    }
-    return aux;
-}
 int main(int argc, char** argv) {
-    freopen("inp","r",stdin);
+    freopen("inp.txt","r",stdin);
     escritores = numeroLibros = 0;
     libros.clear();
     scanf("%d%d", &escritores, &numeroLibros);
@@ -46,9 +39,11 @@ int main(int argc, char** argv) {
     for (int i = 0; i < numeroLibros; i++){
         cin >> libros[i].nombre >> libros[i].numeroDePaginas;
     }
+    
+    /*
     for (int i = 0; i < numeroLibros; i++){
         printf("LIBRO %s NUMERO PAGINAS %d\n", libros[i].nombre.c_str(), libros[i].numeroDePaginas);
-    }
+    }*/
     
     for (int i = 1; i <= numeroLibros; i++){
         intervalos[i][i] = libros[i-1].numeroDePaginas;
@@ -57,13 +52,13 @@ int main(int argc, char** argv) {
             intervalos[j][i] = intervalos[i][j];
         }
     }
-    
+    /*
     for (int i = 1; i <= numeroLibros; i++){
         for (int j = 1; j <= numeroLibros; j++){
             printf("%d               ", intervalos[i][j]);
         }
         printf("\n");
-    }
+    }*/
     
     dp[1][1] = libros[0].numeroDePaginas;
     for (int i = 2; i <= numeroLibros; i++){
@@ -73,28 +68,48 @@ int main(int argc, char** argv) {
     for (int i = 2; i <= escritores; i++){
         dp[1][i] = libros[0].numeroDePaginas;
     }
-    
+    /*
     for (int i = 1; i <= numeroLibros; i++){
         for (int j = 1; j <= escritores; j++){
             printf("%d               ", dp[i][j]);
         }
         printf("\n");
-    }
+    }*/
     
     for (int i = 2; i <= numeroLibros; i++){
         for (int j = 2; j <= escritores; j++){
-            for (int k = 0; k < i; k++){
+            for (int k = 0; k <= i; k++){
                 dp[i][j] = min(dp[i][j], max(dp[i-k][j-1], intervalos[i-k+1][i]));
-                printf("I: %d, J: %d, K: %d, dp[i-k][j-1]: %d, intervalos[k+1][i]: %d\n", i, j, k, dp[i-k][j-1], intervalos[i-k+1][i]);
+                //printf("I: %d, J: %d, K: %d, dp[i-k][j-1]: %d, intervalos[k+1][i]: %d\n", i, j, k, dp[i-k][j-1], intervalos[i-k+1][i]);
             }
         }
     }
+    /*
     for (int i = 1; i <= numeroLibros; i++){
         for (int j = 1; j <= escritores; j++){
             printf("%d        ", dp[i][j]);
         }
         printf("\n");
-    }
+    }*/
+    
+    int solucion = dp[numeroLibros][escritores], sumaIntervalo = 0, escritoresRestantes = escritores-1;
+    printf("%d\n", solucion);
+    vector <int> intervaloAsignado;
+    intervaloAsignado.push_back(numeroLibros);
+    for (int i = numeroLibros-1; i >= 0; i--){
+    	if (sumaIntervalo + libros[i].numeroDePaginas <= solucion && i >= escritoresRestantes){
+    		sumaIntervalo += libros[i].numeroDePaginas;
+		}else{
+			sumaIntervalo = 0;
+			i++;
+			intervaloAsignado.push_back(i);
+			escritoresRestantes--;
+		}
+	}
+	
+	for (int i = 1; i <= intervaloAsignado.size(); i++){
+		printf("Escritor %d: %d - %d\n", i, intervaloAsignado[i-1] , i >= intervaloAsignado.size() ? 1 : intervaloAsignado[i]+1);
+	}
         
     return 0;
 }
