@@ -1,94 +1,116 @@
-#include <iostream>
 #include <cstdio>
-#include <algorithm>
-#include <string>
 #include <vector>
+#include <string>
+#include <iostream>
+#include <algorithm>
+#include <cstring>
 using namespace std;
+#define INF 1000000000
 
+struct libro{
+    string nombre;
+    int numeroDePaginas;
+    libro(){
+        nombre.clear();
+        numeroDePaginas = 0;
+    }
+};
 
-// Estructura que representa un proceso
-// Nombre, hora inicio y hora final
-struct proceso{
-    string nombreProceso; // El nombre del proceso
-    int horaInicio, horaFinal; // La hora de incio y final del proceso
-    // Constructor de la estructura
-    proceso(){
-        horaInicio =  horaFinal  = 0;
-        nombreProceso.clear();
-    }//Fin constructor
-};// Fin estructura
-
-int numeroDeProcesos; // Valor que representa la cantidad de procesos
-vector <proceso> procesos;// Vector que contiene todos los procesos a manejar
-vector <proceso> procesosSeleccionados;// Vector que contiene todos los procesos a manejar
-vector <int> dp;
-int numeroProcesosSeleccionados = 0;
-
-bool cmp(proceso A, proceso B){
-	return A.horaInicio < B.horaInicio;
-}
-
-
-
-void determinarSolucion(int nodoActual, int * sucesores){
-	if(nodoActual == 0) return;
-	numeroProcesosSeleccionados++;
-	determinarSolucion(sucesores[nodoActual], sucesores);
-	if(sucesores[nodoActual] != nodoActual-1 || dp[nodoActual] != dp[nodoActual-1])
-		procesosSeleccionados.push_back(procesos[nodoActual-1]);
-	return;
-}
+vector <libro> libros;
+int escritores, numeroLibros;
 
 int main(int argc, char** argv) {
     freopen("inp.txt","r",stdin);
-    freopen("out.txt","w",stdout);
-  	int maximoTiempoOcupado;
-    maximoTiempoOcupado = 0;// Variable que representa el tiempo máximo que se ha ocupado una sala
-    scanf("%d", &numeroDeProcesos);// Leemos la cantidad de procesos
-    procesos.resize(numeroDeProcesos);// Vector que contiene los procesos a analizar
-    procesosSeleccionados.clear();
-    // for lectura de datos
-    for (int i = 0; i < numeroDeProcesos; i++){
-        cin >> procesos[i].nombreProceso >>  procesos[i].horaInicio >> procesos[i].horaFinal;
-    }//fin lectura de datos
+    escritores = numeroLibros = 0;
+    libros.clear();
+    scanf("%d%d", &escritores, &numeroLibros);
     
-    sort(procesos.begin(), procesos.end(), cmp);
-    dp.resize(numeroDeProcesos+1);
-    int sucesor[numeroDeProcesos+1];
-    dp[0] = 0;
-    sucesor[0] = 0;
+    int dp[numeroLibros+1][escritores+1];
+    int intervalos[numeroLibros+1][numeroLibros+1];
+    
+    for (int i = 0; i <= numeroLibros; i++){
+        for (int j = 0; j <= escritores; j++){
+            dp[i][j] = INF;
+        }
+    }
+    
+    libros.resize(numeroLibros);
+    
+    for (int i = 0; i < numeroLibros; i++){
+        cin >> libros[i].nombre >> libros[i].numeroDePaginas;
+    }
+    
     /*
-    for (int i = 0; i < numeroDeProcesos; i++){
-    	printf("%d. PROCESO %s INICIO %d FINAL %d\n",i+1, procesos[i].nombreProceso.c_str(), procesos[i].horaInicio, procesos[i].horaFinal);
-	}*/
+    for (int i = 0; i < numeroLibros; i++){
+        printf("LIBRO %s NUMERO PAGINAS %d\n", libros[i].nombre.c_str(), libros[i].numeroDePaginas);
+    }*/
     
-     for (int i = 1; i <= numeroDeProcesos; i++){
-    	int mejorProceso = 0;
-    	for (int j = i-1; j >= 1; j--){
-    		if (procesos[j-1].horaFinal <= procesos[i-1].horaInicio && dp[j] >= dp[mejorProceso]){
-					mejorProceso = j;
-					//printf("EL MEJOR PROCESO PARA %d ES %d\n", i, j);
-			}
-		}
-		
-		int tomarProceso = (procesos[i-1].horaFinal - procesos[i-1].horaInicio) + dp[mejorProceso];
-		if (dp[i-1] > tomarProceso){
-			dp[i] = dp[i-1];
-			sucesor[i] = i-1;
+    for (int i = 1; i <= numeroLibros; i++){
+        intervalos[i][i] = libros[i-1].numeroDePaginas;
+        for (int j = i+1; j <= numeroLibros; j++){
+            intervalos[i][j] = libros[j-1].numeroDePaginas + intervalos[i][j-1];
+            intervalos[j][i] = intervalos[i][j];
+        }
+    }
+    /*
+    for (int i = 1; i <= numeroLibros; i++){
+        for (int j = 1; j <= numeroLibros; j++){
+            printf("%d               ", intervalos[i][j]);
+        }
+        printf("\n");
+    }*/
+    
+    dp[1][1] = libros[0].numeroDePaginas;
+    for (int i = 2; i <= numeroLibros; i++){
+        dp[i][1] = libros[i-1].numeroDePaginas + dp[i-1][1];
+    }
+    
+    for (int i = 2; i <= escritores; i++){
+        dp[1][i] = libros[0].numeroDePaginas;
+    }
+    /*
+    for (int i = 1; i <= numeroLibros; i++){
+        for (int j = 1; j <= escritores; j++){
+            printf("%d               ", dp[i][j]);
+        }
+        printf("\n");
+    }*/
+    
+    for (int i = 2; i <= numeroLibros; i++){
+        for (int j = 2; j <= escritores; j++){
+            for (int k = 0; k <= i; k++){
+                dp[i][j] = min(dp[i][j], max(dp[i-k][j-1], intervalos[i-k+1][i]));
+                //printf("I: %d, J: %d, K: %d, dp[i-k][j-1]: %d, intervalos[k+1][i]: %d\n", i, j, k, dp[i-k][j-1], intervalos[i-k+1][i]);
+            }
+        }
+    }
+    /*
+    for (int i = 1; i <= numeroLibros; i++){
+        for (int j = 1; j <= escritores; j++){
+            printf("%d        ", dp[i][j]);
+        }
+        printf("\n");
+    }*/
+    
+    int solucion = dp[numeroLibros][escritores], sumaIntervalo = 0, escritoresRestantes = escritores-1;
+    printf("%d\n", solucion);
+    vector <int> intervaloAsignado;
+    intervaloAsignado.push_back(numeroLibros);
+    for (int i = numeroLibros-1; i >= 0; i--){
+    	if (sumaIntervalo + libros[i].numeroDePaginas <= solucion && i >= escritoresRestantes){
+    		sumaIntervalo += libros[i].numeroDePaginas;
 		}else{
-			dp[i] = tomarProceso;
-			sucesor[i] = mejorProceso;
+			sumaIntervalo = 0;
+			i++;
+			intervaloAsignado.push_back(i);
+			escritoresRestantes--;
 		}
 	}
-	determinarSolucion(numeroDeProcesos, sucesor);
-	printf("%d\n", numeroProcesosSeleccionados);
-    printf("%d\n", dp[numeroDeProcesos]);
-    /*
-	for (int i = 0; i <= numeroDeProcesos; i++){
-    	printf("%d. dp[%d]: %d sucesor[%d]: %d\n", i, i, dp[i], i, sucesor[i]);
-	}*/
-    for (int i = 0; i < procesosSeleccionados.size(); i++){
-    	printf("%s\n", procesosSeleccionados[i].nombreProceso.c_str());
+	
+	for (int i = 1; i <= intervaloAsignado.size(); i++){
+		if(intervaloAsignado[i] >= numeroLibros) continue;
+		printf("Escritor %d: %d - %d\n", i, intervaloAsignado[i-1] , i >= intervaloAsignado.size() ? 1 : intervaloAsignado[i]+1);
 	}
-	return 0;
+        
+    return 0;
 }
