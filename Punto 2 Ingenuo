@@ -1,23 +1,14 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/* 
- * File:   main.cpp
- * Author: invitado
- *
- * Created on 12 de junio de 2017, 05:56 PM
- */
-
 #include <cstdio>
 #include <vector>
 #include <string>
 #include <iostream>
 #include <algorithm>
+#include <cstring>
+#include <utility>
 using namespace std;
 #define INF 1000000000
+
+typedef pair<int,int> intervalo;
 
 struct libro{
     string nombre;
@@ -28,29 +19,102 @@ struct libro{
     }
 };
 
+vector <intervalo> respuesta;
 vector <libro> libros;
 int escritores, numeroLibros;
 
-int solucion(vector<libro> &aux, int n){
-    if (n == 0)
-        return 0;
-    int q = INF;
-    for (int i = 1; i <= n; i++){
-        q = min(q, aux[i-1].numeroDePaginas + solucion(aux,n-i));
-    }
-    return q;
+int sumatoria(int limiteIzquierdo, int limiteDerecho){
+	int aux = 0;
+	for (int i = limiteIzquierdo-1; i < limiteDerecho; i++){
+		aux += libros[i].numeroDePaginas;
+	}
+	return aux;
+}
+
+vector<intervalo> solucion(int i, int j, vector<intervalo> respuestaParcial){
+	if (i <= 0 || j <= 0) return respuestaParcial;
+	//printf("AHORA ESTOY EN %d %d\n", i , j);
+	if (j == 1){
+		respuestaParcial[j-1] = intervalo(1, i);
+		return respuestaParcial;
+	}
+	
+	if (i == 1){
+		for (int l = 0; l < j; l++){
+			respuestaParcial[l] = intervalo(1, 1);
+		}
+		return respuestaParcial;
+	}
+	
+	vector<intervalo> aux(respuestaParcial);
+	
+	int respuestaAux = INF;
+	int minimo = INF;
+	for (int k = 0; k <= i; k++){
+		int aux1, aux2;
+		aux1 = 0;
+		aux2 = 0;
+		//printf("PARA %d %d\n", i , j);
+		aux =  solucion(i-k, j-1, respuestaParcial);
+		for (int l = 0; l < aux.size()-1; l++){
+			aux2 = max(aux2, sumatoria(aux[l].first, aux[l].second));
+		}
+		aux[j-1] = intervalo(i-k+1, i);
+		aux1 = sumatoria(i-k+1, i);
+		for (int p = 1; p <= escritores; p++){
+			//printf("INTERVALO ESCRITOR %d: %d - %d\n", p, aux[p-1].first, aux[p-1].second);
+		}
+		//printf("K: %d, %d,%d: %d, solucion(%d,%d): %d Minimo: %d\n", k, i-k+1-1, i-1, aux1, i-k, j-1, aux2 ,minimo);
+		if (aux1 >= aux2){
+			if(aux1 < minimo){
+				minimo = aux1;
+				respuestaParcial = aux;
+			}
+		}else{
+			if(aux2 < minimo){
+				minimo = aux2;
+				respuestaParcial = aux;
+			}
+		}
+	}
+	return respuestaParcial;
 }
 
 int main(int argc, char** argv) {
-    freopen("inp","r",stdin);
+    freopen("inp.txt","r",stdin);
+    escritores = numeroLibros = 0;
+    libros.clear();
     scanf("%d%d", &escritores, &numeroLibros);
+    
+    int dp[numeroLibros+1][escritores+1];
+    int intervalos[numeroLibros+1][numeroLibros+1];
+    
+    for (int i = 0; i <= numeroLibros; i++){
+        for (int j = 0; j <= escritores; j++){
+            dp[i][j] = INF;
+        }
+    }
+    
+    respuesta.assign(escritores,intervalo(1,1));
+    
     libros.resize(numeroLibros);
+    
     for (int i = 0; i < numeroLibros; i++){
         cin >> libros[i].nombre >> libros[i].numeroDePaginas;
     }
     
-    printf("SOLUCION: %d\n", solucion(libros,numeroLibros));
+    respuesta = solucion(numeroLibros,escritores, respuesta);
+    int maximo = 0;
+    for (int i = 0; i < respuesta.size(); i++){
+    	int aux = sumatoria(respuesta[i].first, respuesta[i].second);
+		maximo = max(aux,maximo);
+	}
+    printf("%d\n", maximo);
     
+    for (int i = 1; i <= escritores; i++){
+    	if (respuesta[i-1].first > respuesta[i-1].second) respuesta[i-1] = intervalo(0,0);
+    	printf("Escritor %d: %d - %d\n", i, respuesta[i-1].first, respuesta[i-1].second);
+	}
+	
     return 0;
 }
-
