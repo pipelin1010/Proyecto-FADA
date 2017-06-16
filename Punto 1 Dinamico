@@ -21,6 +21,7 @@ struct proceso{
 int numeroDeProcesos; // Valor que representa la cantidad de procesos
 vector <proceso> procesos;// Vector que contiene todos los procesos a manejar
 vector <proceso> procesosSeleccionados;// Vector que contiene todos los procesos a manejar
+vector <int> dp;
 int numeroProcesosSeleccionados = 0;
 
 bool cmp(proceso A, proceso B){
@@ -33,13 +34,15 @@ void determinarSolucion(int nodoActual, int * sucesores){
 	if(nodoActual == 0) return;
 	numeroProcesosSeleccionados++;
 	determinarSolucion(sucesores[nodoActual], sucesores);
-	procesosSeleccionados.push_back(procesos[nodoActual-1]);
+	if(sucesores[nodoActual] != nodoActual-1 || dp[nodoActual] != dp[nodoActual-1])
+		procesosSeleccionados.push_back(procesos[nodoActual-1]);
+	return;
 }
 
 int main(int argc, char** argv) {
     freopen("inp.txt","r",stdin);
     //freopen("out.txt","w",stdout);
-  	 int maximoTiempoOcupado;
+  	int maximoTiempoOcupado;
     maximoTiempoOcupado = 0;// Variable que representa el tiempo máximo que se ha ocupado una sala
     scanf("%d", &numeroDeProcesos);// Leemos la cantidad de procesos
     procesos.resize(numeroDeProcesos);// Vector que contiene los procesos a analizar
@@ -50,15 +53,21 @@ int main(int argc, char** argv) {
     }//fin lectura de datos
     
     sort(procesos.begin(), procesos.end(), cmp);
-    int dp[numeroDeProcesos+1];
+    dp.resize(numeroDeProcesos+1);
     int sucesor[numeroDeProcesos+1];
     dp[0] = 0;
     sucesor[0] = 0;
+    /*
+    for (int i = 0; i < numeroDeProcesos; i++){
+    	printf("%d. PROCESO %s INICIO %d FINAL %d\n",i+1, procesos[i].nombreProceso.c_str(), procesos[i].horaInicio, procesos[i].horaFinal);
+	}*/
+    
      for (int i = 1; i <= numeroDeProcesos; i++){
     	int mejorProceso = 0;
     	for (int j = i-1; j >= 1; j--){
     		if (procesos[j-1].horaFinal <= procesos[i-1].horaInicio && dp[j] >= dp[mejorProceso]){
 					mejorProceso = j;
+					//printf("EL MEJOR PROCESO PARA %d ES %d\n", i, j);
 			}
 		}
 		
@@ -74,6 +83,10 @@ int main(int argc, char** argv) {
 	determinarSolucion(numeroDeProcesos, sucesor);
 	printf("%d\n", numeroProcesosSeleccionados);
     printf("%d\n", dp[numeroDeProcesos]);
+    /*
+	for (int i = 0; i <= numeroDeProcesos; i++){
+    	printf("%d. dp[%d]: %d sucesor[%d]: %d\n", i, i, dp[i], i, sucesor[i]);
+	}*/
     for (int i = 0; i < procesosSeleccionados.size(); i++){
     	printf("%s\n", procesosSeleccionados[i].nombreProceso.c_str());
 	}
