@@ -123,29 +123,4 @@ int main(int argc, char** argv) {
     }
     return 0;
 }// fin main
-int main(int argc, char** argv) {
-    freopen("inp","r",stdin);
-    int maximoTiempoOcupado;
-    maximoTiempoOcupado = 0;// Variable que representa el tiempo máximo que se ha ocupado una sala
-    scanf("%d", &numeroDeProcesos);// Leemos la cantidad de procesos
-    procesos.resize(numeroDeProcesos);// Vector que contiene los procesos a analizar
-    
-    // for lectura de datos
-    for (int i = 0; i < numeroDeProcesos; i++){
-        cin >> procesos[i].nombreProceso >>  procesos[i].horaInicio >> procesos[i].horaFinal;
-    }//fin lectura de datos
-    //for (int i = 0; i < numeroDeProcesos; i++) printf("NOMBRE: %s HORA INICIO: %d HORA FINAL %d\n", procesos[i].nombreProceso.c_str(), procesos[i].horaInicio, procesos[i].horaFinal);
-    vector<bool> respuesta;
-    respuesta.assign(numeroDeProcesos,0);
-    respuesta = solucion();
-    int cantidadUnos = 0;
-    for (int i = 0; i < numeroDeProcesos; i++) cantidadUnos += (int)respuesta[i];
-    printf("%d\n", cantidadUnos);
-    int tiempoEfectivo = contarSolucion(respuesta);
-    printf("%d:%d\n", tiempoEfectivo / 100, tiempoEfectivo % 100);
-    for (int i = 0; i < numeroDeProcesos; i++){
-        if( respuesta[i] == 1) printf("%s\n", procesos[i].nombreProceso.c_str());
-    }
-    return 0;
-}// fin main
 
